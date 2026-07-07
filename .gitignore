@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+lwc_db/
+data/*.json
+*.egg-info/
+.env
