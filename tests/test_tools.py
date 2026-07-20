@@ -26,8 +26,8 @@ def db():
 
 @pytest.fixture(scope="session")
 def collection():
-    from core.config import COLLECTION, DB_PATH
     import chromadb
+    from core.config import COLLECTION, DB_PATH
     client = chromadb.PersistentClient(path=DB_PATH)
     return client.get_collection(COLLECTION)
 
