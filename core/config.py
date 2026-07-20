@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import os
 
-SERVER_VERSION = "1.0"
+SERVER_VERSION = "1.1.0"
 
 
 def _safe_int(env_var: str, default: int, min_val: int = 0) -> int:
@@ -20,7 +20,7 @@ def _safe_int(env_var: str, default: int, min_val: int = 0) -> int:
 
 DB_PATH = os.getenv(
     "LWC_DB_PATH",
-    str(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "lwc_db")),
+    os.path.join(os.path.expanduser("~"), ".lwc_mcp", "db"),
 )
 COLLECTION = os.getenv("LWC_COLLECTION", "lwc_reference")
 EMBED_MODEL = os.getenv("LWC_EMBED_MODEL", "all-MiniLM-L6-v2")

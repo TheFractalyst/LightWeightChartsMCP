@@ -1,9 +1,9 @@
 ---
-name: lwc-mcp
+name: lightweightchartsmcp
 description: Use when working with TradingView Lightweight Charts library. Covers createChart, series types, price scales, time scales, plugins, and framework integrations across all versions (3.8-5.0). Triggers on "lightweight charts", "tradingview", "createChart", "addSeries", "candlestick", "chart", "IChartApi", "ISeriesApi".
 ---
 
-# LWC MCP - TradingView Lightweight Charts Reference
+# LightWeightChartsMCP - TradingView Lightweight Charts Reference
 
 ## When to Use
 
@@ -19,9 +19,9 @@ Use this skill when working with the TradingView Lightweight Charts library in a
 
 **Trigger keywords:** "lightweight charts", "tradingview", "createChart", "addSeries", "candlestick", "IChartApi", "ISeriesApi", "price scale", "time scale", "chart styling"
 
-## When to Use the LWC MCP Server
+## When to Use the LightWeightChartsMCP Server
 
-The LWC MCP server provides 6 tools for querying the complete Lightweight Charts documentation across all 5 versions (3.8, 4.0, 4.1, 4.2, 5.0) plus tutorials. Use it instead of relying on training data, which may be outdated or version-confused.
+The LightWeightChartsMCP server provides 6 tools for querying the complete Lightweight Charts documentation across all 5 versions (3.8, 4.0, 4.1, 4.2, 5.0) plus tutorials. Use it instead of relying on training data, which may be outdated or version-confused.
 
 ## Mandatory Usage Pattern (Non-Negotiable)
 

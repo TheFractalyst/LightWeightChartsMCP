@@ -1,7 +1,57 @@
+# Virtual environment
 .venv/
+venv/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database files (ChromaDB - auto-built on first run from shipped JSON data)
 lwc_db/
-data/*.json
-*.egg-info/
+*.db
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+
+# Environment files
 .env
+.env.*
+.envrc
+
+# Release artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Scraped data (regenerate with pipeline - but keep shipped lwc_entries.json)
+data/*.json
+!data/lwc_entries.json
+!data/__init__.py
+
+# Tool caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml

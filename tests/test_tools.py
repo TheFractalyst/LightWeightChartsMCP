@@ -1,4 +1,4 @@
-"""Tests for LWC MCP server tools."""
+"""Tests for LightWeightChartsMCP server tools."""
 from __future__ import annotations
 
 import asyncio
@@ -9,6 +9,11 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+
+
+def _run(coro):
+    """Run a coroutine in a fresh event loop (Py3.14+ compatible)."""
+    return asyncio.new_event_loop().run_until_complete(coro)
 
 
 @pytest.fixture(scope="session")
@@ -42,7 +47,7 @@ class TestLookup:
 class TestSearch:
     @pytest.mark.parametrize("query", ["candlestick series", "price scale", "create chart"])
     def test_search_returns_results(self, db, query):
-        result = asyncio.get_event_loop().run_until_complete(db.query_async(query, n=3))
+        result = _run(db.query_async(query, n=3))
         metas = result.get("metadatas", [[]])[0] if isinstance(result.get("metadatas"), list) else []
         assert len(metas) > 0, f"Search for '{query}' should return results"
 
@@ -65,7 +70,7 @@ class TestValidate:
             "series.setData([{ time: '2024-01-01', open: 100, high: 110, low: 95, close: 105 }]);\n"
             "chart.timeScale().fitContent();"
         )
-        result = asyncio.get_event_loop().run_until_complete(call_validator(code))
+        result = _run(call_validator(code))
         assert result["success"], f"Valid chart code should pass: {result.get('errors', [])}"
 
     def test_validate_deprecated_v3_api(self):
@@ -75,7 +80,7 @@ class TestValidate:
             "const chart = createChart(document.getElementById('container'));\n"
             "const series = chart.addCandlestickSeries();"
         )
-        result = asyncio.get_event_loop().run_until_complete(call_validator(code))
+        result = _run(call_validator(code))
         warnings = result.get("warnings", [])
         assert any("addCandlestickSeries" in w.get("text", "") for w in warnings), "Should warn about deprecated v3 API"
 

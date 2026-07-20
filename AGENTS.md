@@ -1,4 +1,4 @@
-# LWC MCP - Agent Instructions
+# LightWeightChartsMCP - Agent Instructions
 
 ## Overview
 TradingView Lightweight Charts reference documentation MCP server with ~730 entries covering all 5 versions (3.8, 4.0, 4.1, 4.2, 5.0) plus tutorials and framework integrations.
@@ -7,20 +7,23 @@ TradingView Lightweight Charts reference documentation MCP server with ~730 entr
 
 ### Setup
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # macOS/Linux
 pip install -e ".[dev]"
 ```
 
-### Index database
+### Build database (auto-builds on first run, or manually)
 ```bash
-python pipeline/merge_and_index.py --reset
+lwcmcp build
 ```
 
 ### Run server
 ```bash
-python server.py                    # stdio (default)
-TRANSPORT=sse PORT=8080 python server.py  # HTTP/SSE
+lwcmcp                                 # stdio (default)
+lwcmcp --transport sse --port 8080     # SSE (HTTP)
+```
+
+### Index database from pipeline
+```bash
+python pipeline/merge_and_index.py --reset
 ```
 
 ### Lint

@@ -1,7 +1,45 @@
-# LWC MCP Server
+# LightWeightChartsMCP
+
+[![PyPI](https://img.shields.io/pypi/v/lwcmcp?color=blue)](https://pypi.org/project/lwcmcp/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6F00)](https://trychroma.com)
+[![MCP](https://img.shields.io/badge/MCP-Protocol-blue)](https://modelcontextprotocol.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tests](https://github.com/TheFractalyst/LightWeightChartsMCP/actions/workflows/test.yml/badge.svg)](https://github.com/TheFractalyst/LightWeightChartsMCP/actions/workflows/test.yml)
 
 Complete TradingView Lightweight Charts reference documentation MCP server with 6 tools
 for semantic search, JS/TS code validation, and template generation.
+
+[Quick Start](#one-command-fully-functional) |
+[Tools](#tools) |
+[Configuration](#configuration) |
+[Development](#development)
+
+---
+
+```bash
+pip install lwcmcp
+lwcmcp
+```
+
+That's it. On first run, the server auto-builds the ChromaDB vector store from
+shipped JSON data (takes 30-60 seconds for embedding model download + indexing).
+Subsequent runs start instantly.
+
+**What you get:**
+
+- 6 MCP tools for Lightweight Charts docs lookup, JS/TS code validation, and template generation
+- ~1617 entries indexed in a local ChromaDB vector store (100% offline)
+- Sub-millisecond hot cache for priority lookups
+- Regex-based JS/TS validator (no Node.js runtime required)
+- Works with Claude Desktop, Cursor, Windsurf, OpenCode, and any MCP client
+
+**What you need:**
+
+- Python 3.10+
+- Any MCP-compatible AI client
+
+---
 
 ## Features
 
@@ -13,70 +51,83 @@ for semantic search, JS/TS code validation, and template generation.
 - **Validator**: Regex-based JS/TS validation (no Node.js runtime required)
 - **7 templates**: basic_chart, realtime_updates, react_integration, vue_integration, web_components, custom_styling, multi_series
 - **Version filtering**: Every tool accepts `version` param to filter by LWC version
-- **Production-ready**: Health endpoint, circuit breakers, error masking, response capping
+- **Production-ready**: Health endpoint, circuit breakers, error masking, response capping, response caching middleware
 
 ## Coverage
 
 - LWC API: functions, interfaces, enumerations, type-aliases, variables (all 5 versions)
 - Guides: getting-started, series-types, price-scale, time-scale, time-zones, plugins, migrations, android, ios, release-notes
 - Tutorials: customization, a11y, react, vuejs, webcomponents, how-to, demos
-- Total: ~730 entries across 5 versions + tutorials
+- Total: ~1617 entries across 5 versions + tutorials
 - ChromaDB: all entries indexed (JSON = ChromaDB, zero dedup loss)
 
 ## Setup
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # macOS/Linux
-pip install -e ".[dev]"
+pip install lwcmcp
 ```
 
-## Index the database
+Or from source:
 
 ```bash
-# Re-index from existing scraped data (fast)
-python pipeline/merge_and_index.py --reset
-
-# Full re-scrape + re-index (slow, direct HTTP to github.io)
-python pipeline/scrape_lwc.py
-python pipeline/merge_and_index.py --reset
+git clone https://github.com/TheFractalyst/LightWeightChartsMCP.git
+cd LightWeightChartsMCP
+pip install -e ".[dev]"
 ```
 
 ## Run the server
 
 ```bash
 # stdio (for MCP clients like Claude, Cursor, opencode)
-python server.py
+lwcmcp
 
-# SSE (for HTTP access)
-TRANSPORT=sse PORT=8080 python server.py
-```
+# SSE (HTTP)
+lwcmcp --transport sse --port 8080
 
-## Docker
-
-```bash
-docker build -t lwc-mcp .
-docker run -p 8080:8080 -e TRANSPORT=sse lwc-mcp
+# Build ChromaDB manually (auto-builds on first run otherwise)
+lwcmcp build
 ```
 
 ## MCP Client Configuration
 
-Add to your MCP client config (e.g. `~/.config/opencode/opencode.json`):
+### Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
-  "lwc-mcp": {
-    "command": ["/path/to/.venv/bin/python", "/path/to/LWC_MCP/server.py"],
-    "enabled": true,
-    "type": "local",
-    "environment": {
-      "LWC_DB_PATH": "/path/to/LWC_MCP/lwc_db",
-      "LWC_COLLECTION": "lwc_reference",
-      "LOG_LEVEL": "INFO"
+  "mcpServers": {
+    "lightweightchartsmcp": {
+      "command": "lwcmcp",
+      "transport": "stdio"
     }
   }
 }
 ```
+
+### Cursor / Windsurf / OpenCode
+
+Add to your project's `.mcp.json` or global MCP config:
+
+```json
+{
+  "mcpServers": {
+    "lightweightchartsmcp": {
+      "command": "lwcmcp",
+      "transport": "stdio"
+    }
+  }
+}
+```
+
+### SSE (HTTP)
+
+```bash
+lwcmcp --transport sse --port 8080
+```
+
+Connect to `http://localhost:8080`.
 
 ## Tools
 
@@ -93,14 +144,18 @@ Add to your MCP client config (e.g. `~/.config/opencode/opencode.json`):
 +--------------+-----------+------------------------------------------+
 ```
 
-| Tool | Signature |
-|------|-----------|
-| `lwc_lookup` | `(name, kind?, version?)` |
-| `lwc_search` | `(query, category?, namespace?, version?, n_results?)` |
-| `lwc_browse` | `(namespace, category?, style?, version?)` |
-| `lwc_validate` | `(code?, file_path?, file_content?, version?)` |
-| `lwc_repair` | `(code, context, version?)` |
-| `lwc_scaffold` | `(kind, name, description?, version?)` |
+```
++----------------+----------------------------------------------------+
+| Tool           | Signature                                          |
++----------------+----------------------------------------------------+
+| lwc_lookup     | (name, kind?, version?)                            |
+| lwc_search     | (query, category?, namespace?, version?, n_results?)|
+| lwc_browse     | (namespace, category?, style?, version?)           |
+| lwc_validate   | (code?, file_path?, file_content?, version?)       |
+| lwc_repair     | (code, context, version?)                          |
+| lwc_scaffold   | (kind, name, description?, version?)              |
++----------------+----------------------------------------------------+
+```
 
 ### Version Filtering
 
@@ -116,7 +171,7 @@ Every tool accepts an optional `version` parameter:
 +------------------------+------------------+--------------------------------------------+
 | TRANSPORT              | stdio            | Transport: stdio or sse                    |
 | PORT                   | 8080             | Port for SSE transport                     |
-| LWC_DB_PATH            | ./lwc_db         | ChromaDB path                              |
+| LWC_DB_PATH            | ~/.lwc_mcp/db    | ChromaDB path                              |
 | LWC_COLLECTION         | lwc_reference    | ChromaDB collection name                   |
 | LWC_EMBED_MODEL        | all-MiniLM-L6-v2 | Sentence transformer model                 |
 | LWC_MAX_RESULTS        | 100              | Max results returned                       |
@@ -124,7 +179,7 @@ Every tool accepts an optional `version` parameter:
 | VALIDATION_CACHE_SIZE  | 500              | Validation cache max entries               |
 | LWC_INDEX_BATCH_SIZE   | 25               | Indexing batch size                        |
 | LAZY_MODEL             | (empty)          | Set to 1/true to defer model loading       |
-| LWC_DIAG_DIR           | /var/log/lwc_mcp | Log directory (SSE transport)              |
+| LOG_DIR                | ~/.lwc_mcp/logs  | Log directory (SSE transport)              |
 | LOG_LEVEL              | INFO             | Logging level                              |
 +------------------------+------------------+--------------------------------------------+
 ```
@@ -208,13 +263,53 @@ pytest tests/ -v                   # test
 - **FastMCP 3.4** with FileSystemProvider for auto-discovery
 - **ChromaDB** vector store (cosine, all-MiniLM-L6-v2, 384-dim)
 - 3 composable lifespans: db | model | cache
+- Auto-build ChromaDB from shipped JSON on first run
+- Response caching middleware (lookup/browse 1h, search 5m)
+- Response limiting middleware (80KB cap)
 - Circuit breaker on validator and ChromaDB
 - Hot cache for fast lookups
-- Response capping at 80KB
 - Error masking (no internal details leaked)
 - Health endpoint at `/health`
+
+## Database
+
+- ~1617 entries across 5 versions (3.8, 4.0, 4.1, 4.2, 5.0) + tutorials
+- Auto-built on first run from shipped JSON data (1.5MB)
+- Stored at `~/.lwc_mcp/db` (survives project updates)
+
+To rebuild the database:
+
+```bash
+lwcmcp build
+```
 
 ## Data Pipeline
 
 - `pipeline/scrape_lwc.py` - Direct HTTP scraper for Lightweight Charts docs sitemap (github.io, no ScraperAPI needed)
 - `pipeline/merge_and_index.py` - Merge + index into ChromaDB
+
+### Re-scrape from TradingView
+
+```bash
+pip install -e ".[pipeline]"
+python pipeline/scrape_lwc.py
+python pipeline/merge_and_index.py --reset
+```
+
+## Tech Stack
+
+- **FastMCP 3.4** - MCP server framework with FileSystemProvider auto-discovery
+- **ChromaDB** - Local vector database for semantic search
+- **SentenceTransformers** - `all-MiniLM-L6-v2` embedding model (384-dim)
+- **RapidFuzz** - Fuzzy string matching for name lookups
+- **Loguru** - Structured logging with daily rotation (SSE mode)
+
+## Links
+
+- [fractalyst.dev](https://fractalyst.dev/) - Author homepage
+- [TradingView](https://www.tradingview.com/u/Fractalyst/#published-scripts) - Public PineScript indicators
+- [@TheFractalyst](https://x.com/TheFractalyst) - X / Twitter
+
+## License
+
+MIT - see [LICENSE](LICENSE)
