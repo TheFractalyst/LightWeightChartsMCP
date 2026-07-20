@@ -22,13 +22,21 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,pipeline]"
 
       - name: Lint
         run: |
           ruff check . --line-length 120
 
+      - name: Build ChromaDB from shipped data
+        env:
+          LWC_DB_PATH: ${{ github.workspace }}/lwc_db
+        run: |
+          lwcmcp build
+
       - name: Run tests
+        env:
+          LWC_DB_PATH: ${{ github.workspace }}/lwc_db
         run: |
           pytest tests/ -v --tb=short
 
