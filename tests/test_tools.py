@@ -5,10 +5,13 @@ import asyncio
 import sys
 from pathlib import Path
 
+import chromadb
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+
+from core.config import COLLECTION, DB_PATH  # noqa: E402
 
 
 def _run(coro):
@@ -26,8 +29,6 @@ def db():
 
 @pytest.fixture(scope="session")
 def collection():
-    import chromadb
-    from core.config import COLLECTION, DB_PATH
     client = chromadb.PersistentClient(path=DB_PATH)
     return client.get_collection(COLLECTION)
 
